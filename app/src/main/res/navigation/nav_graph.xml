@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/AppsFragment">
+
+    <fragment
+        android:id="@+id/AppsFragment"
+        android:name="com.ntensing.launcher.AppsFragment"
+        android:label="@string/apps_fragment_label"
+        tools:layout="@layout/fragment_apps">
+
+        <action
+            android:id="@+id/action_AppsFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.ntensing.launcher.SettingsFragment"
+        android:label="Settings" >
+        <action
+            android:id="@+id/action_settingsFragment_to_appSettingsFragment"
+            app:destination="@id/appSettingsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/appSettingsFragment"
+        android:name="com.ntensing.launcher.AppSettingsFragment"
+        android:label="AppSettingsFragment" />
+</navigation>
