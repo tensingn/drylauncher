@@ -7,38 +7,28 @@ import android.content.pm.ResolveInfo;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
+
+import com.ntensing.launcher.database.AppEntity;
+import com.ntensing.launcher.database.AppRepository;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class LauncherViewModel extends AndroidViewModel {
-    private final List<LauncherApp> launcherApps;
+    private AppRepository appRepository;
 
     public LauncherViewModel(@NonNull Application application) {
         super(application);
-        launcherApps = initializeApps();
+        appRepository = new AppRepository(application);
     }
 
-    public List<LauncherApp> getLauncherApps() {
-        return launcherApps;
+    public LiveData<List<AppEntity>> getLauncherApps() {
+        return appRepository.getAllApps();
     }
 
-    private List<LauncherApp> initializeApps() {
-        List<LauncherApp> launcherApps = new ArrayList<>();
+    public void insertAll(List<AppEntity> apps) { appRepository.insertAll(apps); }
 
-        final PackageManager pm = getApplication().getPackageManager();
-        Intent intent = new Intent(Intent.ACTION_MAIN, null);
-        intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        List<ResolveInfo> apps1 = pm.queryIntentActivities(intent, 0);
-
-        for (int i = 0; i < apps1.size(); i++) {
-            ResolveInfo app = apps1.get(i);
-            launcherApps.add(new LauncherApp(app, app.loadLabel(pm).toString(), true));
-        }
-
-        return  launcherApps;
-    }
-
-
+    public void insert(AppEntity app) { appRepository.insert(app); }
 }
 

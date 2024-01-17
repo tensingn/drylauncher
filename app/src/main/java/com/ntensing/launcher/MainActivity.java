@@ -2,6 +2,8 @@ package com.ntensing.launcher;
 
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -15,20 +17,20 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import com.ntensing.launcher.database.AppEntity;
 import com.ntensing.launcher.databinding.ActivityMainBinding;
 
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     public static String PHONE = "Phone";
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
-    private LauncherApp phoneApp;
-
-    private List<ApplicationInfo> installedApps;
+    private AppEntity phoneApp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,14 +45,33 @@ public class MainActivity extends AppCompatActivity {
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
-        LauncherViewModel model = new ViewModelProvider(MainActivity.this).get(LauncherViewModel.class);
+        final PackageManager pm = getApplication().getPackageManager();
+        Intent intent = new Intent(Intent.ACTION_MAIN, null);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        List<ResolveInfo> apps = pm.queryIntentActivities(intent, 0);
 
-        List<LauncherApp> launcherApps = model.getLauncherApps();
-        for (LauncherApp app : launcherApps) {
-            if (app.toString().equalsIgnoreCase(PHONE)) {
-                phoneApp = app;
-            }
-        }
+        LauncherViewModel model = new ViewModelProvider(MainActivity.this).get(LauncherViewModel.class);
+        model.getLauncherApps().observe(this, savedApps -> {
+                List<AppEntity> appsToSave = new ArrayList<>();
+
+                for (int i = 0; i < apps.size(); i++) {
+                    ResolveInfo app = apps.get(i);
+                    String name = app.loadLabel(pm).toString();
+                    String id = app.activityInfo.packageName + "/" + name;
+
+                    if (savedApps.stream().noneMatch(ae -> ae.getAppId().equals(id))) {
+                        appsToSave.add(new AppEntity(id, name, app.activityInfo.packageName));
+                    }
+                }
+
+                for (AppEntity app : appsToSave) {
+                    if (app.toString().equalsIgnoreCase(PHONE)) {
+                        phoneApp = app;
+                    }
+                }
+
+                model.insertAll(appsToSave);
+            });
 
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override

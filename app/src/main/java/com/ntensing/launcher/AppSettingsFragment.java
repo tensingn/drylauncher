@@ -17,19 +17,19 @@ public class AppSettingsFragment extends PreferenceFragmentCompat {
         SwitchPreference switchPreference = new SwitchPreference(screen.getContext());
         switchPreference.setTitle("Enabled");
         switchPreference.setSummary("If ON, app can be opened if rules are met.");
-        switchPreference.setKey(getAppName() + "_enabled");
+        switchPreference.setKey(getAppId() + "_enabled");
 
         screen.addPreference(switchPreference);
     }
 
-    private String getAppName() {
-        String appName = "";
+    private String getAppId() {
+        String appId = "";
 
         Bundle receivedBundle = getArguments();
         if (receivedBundle != null) {
-            appName = receivedBundle.getString("appName");
+            appId = receivedBundle.getString("appId");
         }
 
-        return appName;
+        return appId;
     }
 }
