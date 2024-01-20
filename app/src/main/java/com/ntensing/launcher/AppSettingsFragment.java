@@ -2,6 +2,9 @@ package com.ntensing.launcher;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.navigation.Navigation;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
 import androidx.preference.SwitchPreference;
@@ -14,12 +17,38 @@ public class AppSettingsFragment extends PreferenceFragmentCompat {
 
         PreferenceScreen screen = this.getPreferenceScreen();
 
-        SwitchPreference switchPreference = new SwitchPreference(screen.getContext());
-        switchPreference.setTitle("Enabled");
-        switchPreference.setSummary("If ON, app can be opened if rules are met.");
-        switchPreference.setKey(getAppId() + "_enabled");
+        SwitchPreference enabledPreference = new SwitchPreference(screen.getContext());
+        enabledPreference.setTitle("Enabled");
+        enabledPreference.setSummary("If ON, app only can be opened if rules are met.");
+        enabledPreference.setKey(getAppId() + "_enabled");
+        screen.addPreference(enabledPreference);
 
-        screen.addPreference(switchPreference);
+        SwitchPreference locationRuleEnabledPreference = new SwitchPreference(screen.getContext());
+        locationRuleEnabledPreference.setTitle("Enable Location Rules");
+        locationRuleEnabledPreference.setSummary("If ON, app only can be opened if location rules are met.");
+        locationRuleEnabledPreference.setKey(getAppId() + "_locationRule_enabled");
+        screen.addPreference(locationRuleEnabledPreference);
+        locationRuleEnabledPreference.setDependency(getAppId() + "_enabled");
+
+        enabledPreference.setOnPreferenceChangeListener((preference, newValue) -> {
+            if (!(Boolean) newValue) {
+                locationRuleEnabledPreference.setChecked(false);
+            }
+            return true;
+        });
+
+        Preference geofencePreference = new Preference(screen.getContext());
+        geofencePreference.setTitle("Add Location");
+        geofencePreference.setKey(getAppId() + "_geofence");
+        geofencePreference.setOnPreferenceClickListener((preference) -> {
+//            Bundle bundle = new Bundle();
+//            bundle.putString("appId", app.getAppId());
+            Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main)
+                    .navigate(R.id.action_appSettingsFragment_to_locationRuleFragment);
+            return true;
+        });
+        screen.addPreference(geofencePreference);
+        geofencePreference.setDependency(getAppId() + "_locationRule_enabled");
     }
 
     private String getAppId() {

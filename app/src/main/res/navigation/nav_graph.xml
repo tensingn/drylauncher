@@ -26,5 +26,14 @@
     <fragment
         android:id="@+id/appSettingsFragment"
         android:name="com.ntensing.launcher.AppSettingsFragment"
-        android:label="AppSettingsFragment" />
+        android:label="AppSettingsFragment" >
+        <action
+            android:id="@+id/action_appSettingsFragment_to_locationRuleFragment"
+            app:destination="@id/locationRuleFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/locationRuleFragment"
+        android:name="com.ntensing.launcher.LocationRuleFragment"
+        android:label="fragment_location_rule"
+        tools:layout="@layout/fragment_location_rule" />
 </navigation>

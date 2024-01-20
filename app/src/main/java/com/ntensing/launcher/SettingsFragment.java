@@ -32,15 +32,12 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 Preference pref = new Preference(screen.getContext());
                 pref.setTitle(app.toString());
                 pref.setKey(app.getAppId());
-                pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                    @Override
-                    public boolean onPreferenceClick(Preference preference) {
-                        Bundle bundle = new Bundle();
-                        bundle.putString("appId", app.getAppId());
-                        Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main)
-                                .navigate(R.id.action_settingsFragment_to_appSettingsFragment, bundle);
-                        return true;
-                    }
+                pref.setOnPreferenceClickListener(preference -> {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("appId", app.getAppId());
+                    Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main)
+                            .navigate(R.id.action_settingsFragment_to_appSettingsFragment, bundle);
+                    return true;
                 });
                 screen.addPreference(pref);
             }
