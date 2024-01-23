@@ -1,8 +1,13 @@
-package com.ntensing.launcher.database;
+package com.ntensing.launcher.database.app;
 
 import android.content.Context;
 
 import androidx.lifecycle.LiveData;
+
+import com.ntensing.launcher.database.DatabaseConnection;
+import com.ntensing.launcher.database.DatabaseConnectionSingleton;
+import com.ntensing.launcher.database.app.AppDao;
+import com.ntensing.launcher.database.app.AppEntity;
 
 import java.util.List;
 
@@ -19,7 +24,7 @@ public class AppRepository {
         return appDao.getAllApps();
     }
 
-    public LiveData<List<AppEntity>> getAppByAppId(String appId) {
+    public LiveData<AppEntity> getAppByAppId(String appId) {
         return appDao.getAppByAppId(appId);
     }
 

@@ -1,4 +1,4 @@
-package com.ntensing.launcher.database;
+package com.ntensing.launcher.database.app;
 
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;

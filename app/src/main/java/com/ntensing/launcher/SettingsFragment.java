@@ -2,17 +2,13 @@ package com.ntensing.launcher;
 
 import android.os.Bundle;
 
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
-import androidx.preference.CheckBoxPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
-import androidx.preference.SwitchPreference;
 
-import com.ntensing.launcher.database.AppEntity;
+import com.ntensing.launcher.database.app.AppEntity;
 
 import java.util.List;
 

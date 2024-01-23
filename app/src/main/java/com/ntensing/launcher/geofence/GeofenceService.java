@@ -18,14 +18,13 @@ public class GeofenceService extends ContextWrapper {
         super(base);
     }
 
-    public GeofencingRequest getGeofencingRequest(Geofence geofence) {
+    public GeofencingRequest createGeofencingRequest(Geofence geofence) {
         return new GeofencingRequest.Builder()
                 .addGeofence(geofence)
-                .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
                 .build();
     }
 
-    public Geofence getGeofence(String id, LatLng latLng, float radius, int transitionTypes) {
+    public Geofence createGeofence(String id, LatLng latLng, float radius, int transitionTypes) {
         return new Geofence.Builder()
                 .setCircularRegion(latLng.latitude, latLng.longitude, radius)
                 .setRequestId(id)

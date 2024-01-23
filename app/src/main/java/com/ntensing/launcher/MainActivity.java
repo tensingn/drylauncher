@@ -1,12 +1,9 @@
 package com.ntensing.launcher;
 
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
-
-import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
@@ -17,7 +14,7 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-import com.ntensing.launcher.database.AppEntity;
+import com.ntensing.launcher.database.app.AppEntity;
 import com.ntensing.launcher.databinding.ActivityMainBinding;
 
 import android.view.Menu;
@@ -70,15 +67,12 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
 
-                model.insertAll(appsToSave);
+                model.insertApps(appsToSave);
             });
 
-        binding.fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = getPackageManager().getLaunchIntentForPackage(phoneApp.getActivityName());
-                startActivity(intent);
-            }
+        binding.fab.setOnClickListener(view -> {
+            Intent intent1 = getPackageManager().getLaunchIntentForPackage(phoneApp.getActivityName());
+            startActivity(intent1);
         });
     }
 

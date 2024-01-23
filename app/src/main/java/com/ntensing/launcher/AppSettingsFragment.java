@@ -41,10 +41,10 @@ public class AppSettingsFragment extends PreferenceFragmentCompat {
         geofencePreference.setTitle("Add Location");
         geofencePreference.setKey(getAppId() + "_geofence");
         geofencePreference.setOnPreferenceClickListener((preference) -> {
-//            Bundle bundle = new Bundle();
-//            bundle.putString("appId", app.getAppId());
+            Bundle bundle = new Bundle();
+            bundle.putString("appId", getAppId());
             Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main)
-                    .navigate(R.id.action_appSettingsFragment_to_locationRuleFragment);
+                    .navigate(R.id.action_appSettingsFragment_to_locationRuleFragment, bundle);
             return true;
         });
         screen.addPreference(geofencePreference);

@@ -5,10 +5,11 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.Navigation;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.IntentFilter;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.Geofence;
@@ -31,11 +33,10 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.CancellationTokenSource;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.ntensing.launcher.geofence.GeofenceBroadcastReceiver;
+import com.ntensing.launcher.database.geofence.GeofenceEntity;
 import com.ntensing.launcher.geofence.GeofenceService;
 
+import java.util.List;
 import java.util.UUID;
 
 public class LocationRuleFragment extends Fragment implements GoogleMap.OnMapLongClickListener {
@@ -45,6 +46,8 @@ public class LocationRuleFragment extends Fragment implements GoogleMap.OnMapLon
     private GeofencingClient geofencingClient;
     private GoogleMap map;
     private GeofenceService geofenceService;
+    private LauncherViewModel model;
+    private List<GeofenceEntity> geofences;
 
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
 
@@ -69,6 +72,8 @@ public class LocationRuleFragment extends Fragment implements GoogleMap.OnMapLon
                 googleMap.setMinZoomPreference(10.0f);
             }
 
+            displaySavedGeofences();
+
             googleMap.setOnMapLongClickListener(LocationRuleFragment.this);
         }
     };
@@ -85,6 +90,7 @@ public class LocationRuleFragment extends Fragment implements GoogleMap.OnMapLon
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        model = new ViewModelProvider(requireActivity()).get(LauncherViewModel.class);
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
 
         ActivityResultLauncher<String[]> locationPermissionRequest =
@@ -94,14 +100,14 @@ public class LocationRuleFragment extends Fragment implements GoogleMap.OnMapLon
                                     android.Manifest.permission.ACCESS_FINE_LOCATION, false);
                             Boolean coarseLocationGranted = result.getOrDefault(
                                     android.Manifest.permission.ACCESS_COARSE_LOCATION,false);
-                    Boolean backgroundLocationGranted = result.getOrDefault(
-                            Manifest.permission.ACCESS_BACKGROUND_LOCATION,false);
-                    if (fineLocationGranted != null && fineLocationGranted) {
-                                // Precise location access granted.
-                            } else if (coarseLocationGranted != null && coarseLocationGranted) {
-                                // Only approximate location access granted.
-                            } else {
-                                // No location access granted.
+                            Boolean backgroundLocationGranted = result.getOrDefault(
+                                    Manifest.permission.ACCESS_BACKGROUND_LOCATION,false);
+
+                            if (!fineLocationGranted || !coarseLocationGranted || !backgroundLocationGranted) {
+                                // don't have enough location permissions
+                                Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main)
+                                        .popBackStack(R.id.appSettingsFragment, false);
+                                Toast.makeText(requireActivity(), "Not enough location permissions", Toast.LENGTH_SHORT).show();
                             }
                         }
                 );
@@ -116,8 +122,8 @@ public class LocationRuleFragment extends Fragment implements GoogleMap.OnMapLon
                 .addOnSuccessListener(getActivity(), location -> {
                     if (location != null) {
                         lastLocation = location;
-                        SupportMapFragment mapFragment =
-                                (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+                        SupportMapFragment mapFragment = isAdded() ?
+                                (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map) : null;
                         if (mapFragment != null) {
                             mapFragment.getMapAsync(callback);
                         }
@@ -132,32 +138,56 @@ public class LocationRuleFragment extends Fragment implements GoogleMap.OnMapLon
 
     @Override
     public void onMapLongClick(@NonNull LatLng latLng) {
-        map.clear();
-
-        MarkerOptions markerOptions = new MarkerOptions().position(latLng);
-        map.addMarker(markerOptions);
-
-        CircleOptions circleOptions = new CircleOptions();
-        circleOptions.center(latLng);
-        circleOptions.radius(250);
-        circleOptions.strokeColor(Color.argb(255, 0, 0, 255));
-        circleOptions.strokeWidth(4);
-        circleOptions.fillColor(Color.argb(50, 0, 0, 255));
-        map.addCircle(circleOptions);
-
+        //map.clear();
         addGeofence(latLng, 250);
     }
 
     @SuppressLint("MissingPermission")
     private void addGeofence(LatLng latLng, float radius) {
-        Geofence geofence = geofenceService.getGeofence(UUID.randomUUID().toString(), latLng, radius,
+        String geofenceId = UUID.randomUUID().toString();
+        Geofence geofence = geofenceService.createGeofence(geofenceId, latLng, radius,
                 Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT);
-        GeofencingRequest geofencingRequest = geofenceService.getGeofencingRequest(geofence);
+        GeofencingRequest geofencingRequest = geofenceService.createGeofencingRequest(geofence);
+
         geofencingClient.addGeofences(geofencingRequest, geofenceService.getPendingIntent())
-                .addOnSuccessListener(unused -> Log.d(TAG, "onSuccess: geofence added"))
+                .addOnSuccessListener(unused -> {
+                    Log.d(TAG, "onSuccess: geofence added with id " + geofenceId);
+
+                    // persist geofence
+                    model.insertGeofence(new GeofenceEntity(geofenceId, getAppId(),
+                            geofence.getLatitude(), geofence.getLongitude(), geofence.getRadius()));
+                })
                 .addOnFailureListener(e -> {
                     String msg = geofenceService.getErrorString(e);
                     Log.d(TAG, "onFailure: " + msg);
                 });
+    }
+
+    private String getAppId() {
+        String appId = "";
+
+        Bundle receivedBundle = getArguments();
+        if (receivedBundle != null) {
+            appId = receivedBundle.getString("appId");
+        }
+
+        return appId;
+    }
+
+    private void displaySavedGeofences() {
+        model.getGeofencesByAppId(getAppId()).observe(getActivity(), savedGeofences -> {
+            for (GeofenceEntity geofenceEntity : savedGeofences) {
+                MarkerOptions markerOptions = new MarkerOptions().position(geofenceEntity.getLatLng());
+                map.addMarker(markerOptions);
+
+                CircleOptions circleOptions = new CircleOptions();
+                circleOptions.center(geofenceEntity.getLatLng());
+                circleOptions.radius(geofenceEntity.getRadius());
+                circleOptions.strokeColor(Color.argb(255, 0, 0, 255));
+                circleOptions.strokeWidth(4);
+                circleOptions.fillColor(Color.argb(50, 0, 0, 255));
+                map.addCircle(circleOptions);
+            }
+        });
     }
 }
