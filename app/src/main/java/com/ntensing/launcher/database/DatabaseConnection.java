@@ -12,7 +12,7 @@ import com.ntensing.launcher.database.geofence.GeofenceEntity;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Database(entities = {AppEntity.class, GeofenceEntity.class}, version = 3, exportSchema = false)
+@Database(entities = {AppEntity.class, GeofenceEntity.class}, version = 4, exportSchema = false)
 public abstract class DatabaseConnection extends RoomDatabase {
     public abstract AppDao appDao();
     public abstract GeofenceDao geofenceDao();

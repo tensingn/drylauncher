@@ -38,7 +38,7 @@ public class AppSettingsFragment extends PreferenceFragmentCompat {
         });
 
         Preference geofencePreference = new Preference(screen.getContext());
-        geofencePreference.setTitle("Add Location");
+        geofencePreference.setTitle("Edit Locations");
         geofencePreference.setKey(getAppId() + "_geofence");
         geofencePreference.setOnPreferenceClickListener((preference) -> {
             Bundle bundle = new Bundle();

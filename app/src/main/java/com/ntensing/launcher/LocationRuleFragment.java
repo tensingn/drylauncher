@@ -4,6 +4,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
@@ -31,15 +32,21 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.CancellationTokenSource;
 import com.ntensing.launcher.database.geofence.GeofenceEntity;
+import com.ntensing.launcher.database.geofence.GeofenceRepository;
 import com.ntensing.launcher.geofence.GeofenceService;
 
 import java.util.List;
 import java.util.UUID;
 
-public class LocationRuleFragment extends Fragment implements GoogleMap.OnMapLongClickListener {
+public class LocationRuleFragment
+        extends Fragment
+        implements GoogleMap.OnMapLongClickListener,
+            RemoveGeofenceDialogFragment.RemoveGeofenceDialogListener,
+            AddGeofenceDialogFragment.AddGeofenceDialogListener {
     private static final String TAG = "LocationRuleFragment";
     private FusedLocationProviderClient fusedLocationProviderClient;
     private Location lastLocation;
@@ -47,7 +54,6 @@ public class LocationRuleFragment extends Fragment implements GoogleMap.OnMapLon
     private GoogleMap map;
     private GeofenceService geofenceService;
     private LauncherViewModel model;
-    private List<GeofenceEntity> geofences;
 
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
 
@@ -75,6 +81,12 @@ public class LocationRuleFragment extends Fragment implements GoogleMap.OnMapLon
             displaySavedGeofences();
 
             googleMap.setOnMapLongClickListener(LocationRuleFragment.this);
+            googleMap.setOnMarkerClickListener(marker -> {
+                GeofenceEntity geofenceEntity = (GeofenceEntity) marker.getTag();
+                new RemoveGeofenceDialogFragment(geofenceEntity.getGeofenceId())
+                        .show(getChildFragmentManager(), "REMOVE_GEOFENCE");
+                return false;
+            });
         }
     };
 
@@ -138,8 +150,8 @@ public class LocationRuleFragment extends Fragment implements GoogleMap.OnMapLon
 
     @Override
     public void onMapLongClick(@NonNull LatLng latLng) {
-        //map.clear();
-        addGeofence(latLng, 250);
+        new AddGeofenceDialogFragment(latLng)
+                .show(getChildFragmentManager(), "ADD_GEOFENCE");
     }
 
     @SuppressLint("MissingPermission")
@@ -155,7 +167,7 @@ public class LocationRuleFragment extends Fragment implements GoogleMap.OnMapLon
 
                     // persist geofence
                     model.insertGeofence(new GeofenceEntity(geofenceId, getAppId(),
-                            geofence.getLatitude(), geofence.getLongitude(), geofence.getRadius()));
+                            geofence.getLatitude(), geofence.getLongitude(), geofence.getRadius(), false));
                 })
                 .addOnFailureListener(e -> {
                     String msg = geofenceService.getErrorString(e);
@@ -176,18 +188,48 @@ public class LocationRuleFragment extends Fragment implements GoogleMap.OnMapLon
 
     private void displaySavedGeofences() {
         model.getGeofencesByAppId(getAppId()).observe(getActivity(), savedGeofences -> {
-            for (GeofenceEntity geofenceEntity : savedGeofences) {
-                MarkerOptions markerOptions = new MarkerOptions().position(geofenceEntity.getLatLng());
-                map.addMarker(markerOptions);
+            // need to clear map so we can get rid of deleted geofences
+            map.clear();
+            LatLng lastLatLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
+            map.addMarker(new MarkerOptions().position(lastLatLng).title("Current Location"));
 
-                CircleOptions circleOptions = new CircleOptions();
-                circleOptions.center(geofenceEntity.getLatLng());
-                circleOptions.radius(geofenceEntity.getRadius());
-                circleOptions.strokeColor(Color.argb(255, 0, 0, 255));
-                circleOptions.strokeWidth(4);
-                circleOptions.fillColor(Color.argb(50, 0, 0, 255));
+            for (GeofenceEntity geofenceEntity : savedGeofences) {
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .position(geofenceEntity.getLatLng());
+                Marker marker = map.addMarker(markerOptions);
+                marker.setTag(geofenceEntity);
+
+                CircleOptions circleOptions = new CircleOptions()
+                        .center(geofenceEntity.getLatLng())
+                        .radius(geofenceEntity.getRadius())
+                        .strokeColor(Color.argb(255, 0, 0, 255))
+                        .strokeWidth(4)
+                        .fillColor(Color.argb(50, 0, 0, 255));
                 map.addCircle(circleOptions);
             }
         });
+    }
+
+    @Override
+    public void onRemoveGeofenceDialogYesClick(String geofenceId) {
+        Log.d(TAG, "On RemoveGeofenceDialogFragment YES click: Deleting geofence " + geofenceId + "...");
+        model.deleteGeofenceById(geofenceId);
+    }
+
+    @Override
+    public void onRemoveGeofenceDialogNoClick(String geofenceId) {
+        Log.d(TAG, "On RemoveGeofenceDialogFragment NO click: Not deleting geofence " + geofenceId + "...");
+    }
+
+
+    @Override
+    public void onAddGeofenceDialogYesClick(LatLng latLng, float radius) {
+        Log.d(TAG, "On AddGeofenceDialogFragment YES click: Adding geofence...");
+        addGeofence(latLng, radius);
+    }
+
+    @Override
+    public void onAddGeofenceDialogNoClick() {
+        Log.d(TAG, "On AddGeofenceDialogFragment NO click: Not adding geofence...");
     }
 }

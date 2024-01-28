@@ -21,9 +21,10 @@ public class LauncherViewModel extends AndroidViewModel {
     public LauncherViewModel(@NonNull Application application) {
         super(application);
         appRepository = new AppRepository(application);
-        geofenceRepository = new GeofenceRepository(application);
+        geofenceRepository = GeofenceRepository.getInstance(application);
     }
 
+    // Apps
     public LiveData<List<AppEntity>> getLauncherApps() {
         return appRepository.getAllApps();
     }
@@ -32,9 +33,13 @@ public class LauncherViewModel extends AndroidViewModel {
 
     public void insertApp(AppEntity app) { appRepository.insert(app); }
 
+
+    // GEOFENCES
     public LiveData<List<GeofenceEntity>> getGeofencesByAppId(String appId) { return geofenceRepository.getGeofencesByAppId(appId); }
 
     public void insertGeofences(List<GeofenceEntity> geofences) { geofenceRepository.insertAll(geofences); }
 
     public void insertGeofence(GeofenceEntity geofence) { geofenceRepository.insert(geofence); }
+
+    public void deleteGeofenceById(String geofenceId) { geofenceRepository.deleteById(geofenceId); }
 }

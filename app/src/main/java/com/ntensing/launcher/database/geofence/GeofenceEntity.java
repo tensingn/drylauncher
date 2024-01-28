@@ -33,16 +33,22 @@ public class GeofenceEntity {
     @NonNull
     private double radius;
 
+    @ColumnInfo(name = "currentlyIn")
+    @NonNull
+    private boolean currentlyIn;
+
     public GeofenceEntity(@NonNull String geofenceId,
                           @NonNull String appId,
                           @NonNull double latitude,
                           @NonNull double longitude,
-                          @NonNull double radius) {
+                          @NonNull double radius,
+                          @NonNull boolean currentlyIn) {
         this.geofenceId = geofenceId;
         this.appId = appId;
         this.latitude = latitude;
         this.longitude = longitude;
         this.radius = radius;
+        this.currentlyIn = currentlyIn;
     }
 
     public String getGeofenceId() {
@@ -60,4 +66,6 @@ public class GeofenceEntity {
     public double getRadius() { return radius; }
 
     public LatLng getLatLng() { return new LatLng(latitude, longitude); }
+
+    public boolean getCurrentlyIn() { return currentlyIn; }
 }

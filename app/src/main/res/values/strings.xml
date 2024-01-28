@@ -20,4 +20,10 @@
     <string name="attachment_summary_on">Automatically download attachments for incoming emails
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
+
+    <!-- dialog strings -->
+    <string name="removeGeofenceDialogTitle">Remove geofence?</string>
+    <string name="addGeofenceDialogTitle">Add geofence?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 </resources>

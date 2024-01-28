@@ -3,14 +3,69 @@ package com.ntensing.launcher.geofence;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.widget.Toast;
 
-public class GeofenceBroadcastReceiver extends BroadcastReceiver {
+import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofenceStatusCodes;
+import com.google.android.gms.location.GeofencingEvent;
+import com.ntensing.launcher.LauncherViewModel;
+import com.ntensing.launcher.R;
+import com.ntensing.launcher.database.geofence.GeofenceRepository;
+
+import java.util.List;
+
+public class GeofenceBroadcastReceiver extends BroadcastReceiver {
+    private GeofenceRepository geofenceRepository;
+    private static final String TAG = "GeofenceBroadcastReceiver";
     @Override
     public void onReceive(Context context, Intent intent) {
-        // TODO: This method is called when the BroadcastReceiver is receiving
-        // an Intent broadcast.
-        Toast.makeText(context, "Geofence triggered", Toast.LENGTH_SHORT).show();
+        geofenceRepository = GeofenceRepository.getInstance(context);
+
+        GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
+        if (geofencingEvent.hasError()) {
+            String errorMessage = GeofenceStatusCodes
+                    .getStatusCodeString(geofencingEvent.getErrorCode());
+            Log.e(TAG, errorMessage);
+            return;
+        }
+
+        int geofenceTransition = geofencingEvent.getGeofenceTransition();
+        boolean currentlyIn = geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER ? true : false;
+
+        if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER ||
+                geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
+
+            List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
+            
+            String geofenceTransitionDetails = getGeofenceTransitionDetails(
+                    triggeringGeofences,
+                    currentlyIn
+            );
+
+            updateCurrentlyIns(triggeringGeofences, currentlyIn);
+
+            Log.i(TAG, geofenceTransitionDetails);
+        } else {
+            Log.e(TAG, "unknown transition");
+        }
+    }
+
+    private String getGeofenceTransitionDetails(List<Geofence> triggeringGeofences, boolean currentlyIn) {
+        String details = currentlyIn ? "entered geofence with id " : "exited geofence with id ";
+
+        for (Geofence geofence : triggeringGeofences) {
+            details += geofence.getRequestId() + ", ";
+        }
+
+        return details;
+    }
+
+    private void updateCurrentlyIns(List<Geofence> geofences, boolean currentlyIn) {
+        for (Geofence geofence : geofences) {
+            geofenceRepository.updateCurrentlyIn(geofence.getRequestId(), currentlyIn);
+        }
     }
 }

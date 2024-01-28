@@ -10,10 +10,10 @@ import java.util.List;
 
 @Dao
 public interface AppDao {
-    @Query("SELECT * FROM app")
+    @Query("SELECT * FROM app;")
     LiveData<List<AppEntity>> getAllApps();
 
-    @Query("SELECT * FROM app WHERE appId = (:appId) LIMIT 1")
+    @Query("SELECT * FROM app WHERE appId = (:appId) LIMIT 1;")
     LiveData<AppEntity> getAppByAppId(String appId);
 
     @Insert
