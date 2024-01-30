@@ -8,8 +8,10 @@ import com.ntensing.launcher.database.DatabaseConnection;
 import com.ntensing.launcher.database.DatabaseConnectionSingleton;
 import com.ntensing.launcher.database.app.AppDao;
 import com.ntensing.launcher.database.app.AppEntity;
+import com.ntensing.launcher.database.geofence.GeofenceEntity;
 
 import java.util.List;
+import java.util.Map;
 
 public class AppRepository {
     private AppDao appDao;
@@ -27,6 +29,9 @@ public class AppRepository {
     public LiveData<AppEntity> getAppByAppId(String appId) {
         return appDao.getAppByAppId(appId);
     }
+
+    public LiveData<List<AppWithGeofencesEntity>> getAppsWithGeofences() { return appDao.getAppsWithGeofences(); }
+
 
     public void insertAll(List<AppEntity> apps) {
         DatabaseConnection.executor.execute(() ->

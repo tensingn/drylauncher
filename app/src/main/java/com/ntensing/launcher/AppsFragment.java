@@ -3,6 +3,7 @@ package com.ntensing.launcher;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,16 +16,21 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 
 import com.ntensing.launcher.database.app.AppEntity;
+import com.ntensing.launcher.database.app.AppWithGeofencesEntity;
 import com.ntensing.launcher.databinding.FragmentAppsBinding;
+import com.ntensing.launcher.rules.RulesService;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class AppsFragment extends Fragment {
+    private static final String TAG = "AppsFragment";
 
     private FragmentAppsBinding binding;
 
-    private List<AppEntity> launcherApps;
+    private List<AppEntity> shownApps;
+
+    private RulesService rulesService;
 
     @Override
     public View onCreateView(
@@ -48,28 +54,27 @@ public class AppsFragment extends Fragment {
     }
 
     private void initializeDisplayContent() {
+        rulesService = RulesService.getInstance(this.getContext());
         final ListView listViewApps = getView().findViewById(R.id.listview_apps);
 
         final ArrayAdapter<AppEntity> launcherAppArrayAdapter = new ArrayAdapter<>(this.getContext(), android.R.layout.simple_list_item_1);
         listViewApps.setAdapter(launcherAppArrayAdapter);
 
         listViewApps.setOnItemClickListener((adapterView, view, position, l) -> {
-            AppEntity app = launcherApps.get(position);
+            AppEntity app = shownApps.get(position);
             Intent intent = getContext().getPackageManager().getLaunchIntentForPackage(app.getActivityName());
             startActivity(intent);
         });
 
         LauncherViewModel model = new ViewModelProvider(requireActivity()).get(LauncherViewModel.class);
 
-        model.getLauncherApps().observe(getActivity(), savedApps -> {
-            launcherApps = savedApps;
+        model.getAppsWithGeofences().observe(getActivity(), appsWithGeofences -> {
+            launcherAppArrayAdapter.clear();
 
-            List<AppEntity> shownApps = new ArrayList<>();
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-            for (AppEntity app : launcherApps) {
-                String prefKey = app.getAppId() + "_enabled";
-                if (prefs.getBoolean(prefKey, false)) {
-                    shownApps.add(app);
+            shownApps = new ArrayList<>();
+            for (AppWithGeofencesEntity awg : appsWithGeofences) {
+                if (rulesService.shouldAllowApp(awg)) {
+                    shownApps.add(awg.app);
                 }
             }
 

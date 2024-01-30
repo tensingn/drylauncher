@@ -20,15 +20,15 @@ public class AppSettingsFragment extends PreferenceFragmentCompat {
         SwitchPreference enabledPreference = new SwitchPreference(screen.getContext());
         enabledPreference.setTitle("Enabled");
         enabledPreference.setSummary("If ON, app only can be opened if rules are met.");
-        enabledPreference.setKey(getAppId() + "_enabled");
+        enabledPreference.setKey(getAppId() + getString(R.string.enabledPrefSuffix));
         screen.addPreference(enabledPreference);
 
         SwitchPreference locationRuleEnabledPreference = new SwitchPreference(screen.getContext());
         locationRuleEnabledPreference.setTitle("Enable Location Rules");
         locationRuleEnabledPreference.setSummary("If ON, app only can be opened if location rules are met.");
-        locationRuleEnabledPreference.setKey(getAppId() + "_locationRule_enabled");
+        locationRuleEnabledPreference.setKey(getAppId() + getString(R.string.locationRuleEnabledPrefSuffix));
         screen.addPreference(locationRuleEnabledPreference);
-        locationRuleEnabledPreference.setDependency(getAppId() + "_enabled");
+        locationRuleEnabledPreference.setDependency(getAppId() + getString(R.string.enabledPrefSuffix));
 
         enabledPreference.setOnPreferenceChangeListener((preference, newValue) -> {
             if (!(Boolean) newValue) {

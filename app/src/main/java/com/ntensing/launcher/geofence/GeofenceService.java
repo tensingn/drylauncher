@@ -10,12 +10,14 @@ import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofenceStatusCodes;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.maps.model.LatLng;
+import com.ntensing.launcher.LauncherViewModel;
+import com.ntensing.launcher.database.geofence.GeofenceRepository;
 
 public class GeofenceService extends ContextWrapper {
     private PendingIntent pendingIntent;
 
-    public GeofenceService(Context base) {
-        super(base);
+    public GeofenceService(Context context) {
+        super(context);
     }
 
     public GeofencingRequest createGeofencingRequest(Geofence geofence) {

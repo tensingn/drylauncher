@@ -26,4 +26,8 @@
     <string name="addGeofenceDialogTitle">Add geofence?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+
+    <!-- pref strings -->
+    <string name="enabledPrefSuffix">_enabled</string>
+    <string name="locationRuleEnabledPrefSuffix">_locationRule_enabled</string>
 </resources>

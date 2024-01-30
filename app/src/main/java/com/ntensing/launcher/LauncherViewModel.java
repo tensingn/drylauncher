@@ -8,10 +8,12 @@ import androidx.lifecycle.LiveData;
 
 import com.ntensing.launcher.database.app.AppEntity;
 import com.ntensing.launcher.database.app.AppRepository;
+import com.ntensing.launcher.database.app.AppWithGeofencesEntity;
 import com.ntensing.launcher.database.geofence.GeofenceEntity;
 import com.ntensing.launcher.database.geofence.GeofenceRepository;
 
 import java.util.List;
+import java.util.Map;
 
 public class LauncherViewModel extends AndroidViewModel {
     private AppRepository appRepository;
@@ -24,7 +26,7 @@ public class LauncherViewModel extends AndroidViewModel {
         geofenceRepository = GeofenceRepository.getInstance(application);
     }
 
-    // Apps
+    // APPS
     public LiveData<List<AppEntity>> getLauncherApps() {
         return appRepository.getAllApps();
     }
@@ -42,4 +44,9 @@ public class LauncherViewModel extends AndroidViewModel {
     public void insertGeofence(GeofenceEntity geofence) { geofenceRepository.insert(geofence); }
 
     public void deleteGeofenceById(String geofenceId) { geofenceRepository.deleteById(geofenceId); }
+
+    // APP/GEOFENCE
+    public LiveData<List<AppWithGeofencesEntity>> getAppsWithGeofences() {
+        return appRepository.getAppsWithGeofences();
+    }
 }

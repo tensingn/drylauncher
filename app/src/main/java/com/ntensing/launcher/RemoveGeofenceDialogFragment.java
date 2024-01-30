@@ -20,9 +20,9 @@ public class RemoveGeofenceDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage(R.string.removeGeofenceDialogTitle)
-                .setPositiveButton(R.string.yes, (dialog, id) -> listener.onRemoveGeofenceDialogYesClick(geofenceID))
-                .setNegativeButton(R.string.no, (dialog, id) -> listener.onRemoveGeofenceDialogNoClick(geofenceID));
+        builder.setMessage(getString(R.string.removeGeofenceDialogTitle))
+                .setPositiveButton(getString(R.string.yes), (dialog, id) -> listener.onRemoveGeofenceDialogYesClick(geofenceID))
+                .setNegativeButton(getString(R.string.no), (dialog, id) -> listener.onRemoveGeofenceDialogNoClick(geofenceID));
         return builder.create();
     }
 

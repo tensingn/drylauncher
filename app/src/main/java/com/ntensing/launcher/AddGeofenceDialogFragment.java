@@ -21,9 +21,9 @@ public class AddGeofenceDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage(R.string.addGeofenceDialogTitle)
-                .setPositiveButton(R.string.yes, (dialog, id) -> listener.onAddGeofenceDialogYesClick(latLng, radius))
-                .setNegativeButton(R.string.no, (dialog, id) -> listener.onAddGeofenceDialogNoClick());
+        builder.setMessage(getString(R.string.addGeofenceDialogTitle))
+                .setPositiveButton(getString(R.string.yes), (dialog, id) -> listener.onAddGeofenceDialogYesClick(latLng, radius))
+                .setNegativeButton(getString(R.string.no), (dialog, id) -> listener.onAddGeofenceDialogNoClick());
         return builder.create();
     }
 

@@ -158,7 +158,7 @@ public class LocationRuleFragment
     private void addGeofence(LatLng latLng, float radius) {
         String geofenceId = UUID.randomUUID().toString();
         Geofence geofence = geofenceService.createGeofence(geofenceId, latLng, radius,
-                Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT);
+                Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT | Geofence.GEOFENCE_TRANSITION_DWELL);
         GeofencingRequest geofencingRequest = geofenceService.createGeofencingRequest(geofence);
 
         geofencingClient.addGeofences(geofencingRequest, geofenceService.getPendingIntent())

@@ -33,10 +33,12 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
         }
 
         int geofenceTransition = geofencingEvent.getGeofenceTransition();
-        boolean currentlyIn = geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER ? true : false;
+        boolean currentlyIn = geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER ||
+                geofenceTransition == Geofence.GEOFENCE_TRANSITION_DWELL;
 
         if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER ||
-                geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
+                geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT ||
+                geofenceTransition == Geofence.GEOFENCE_TRANSITION_DWELL) {
 
             List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
             
