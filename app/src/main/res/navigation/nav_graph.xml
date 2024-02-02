@@ -3,10 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/AppsFragment">
+    app:startDestination="@id/appsFragment">
 
     <fragment
-        android:id="@+id/AppsFragment"
+        android:id="@+id/appsFragment"
         android:name="com.ntensing.launcher.AppsFragment"
         android:label="@string/apps_fragment_label"
         tools:layout="@layout/fragment_apps">
@@ -25,8 +25,7 @@
     </fragment>
     <fragment
         android:id="@+id/appSettingsFragment"
-        android:name="com.ntensing.launcher.AppSettingsFragment"
-        android:label="AppSettingsFragment" >
+        android:name="com.ntensing.launcher.AppSettingsFragment">
         <action
             android:id="@+id/action_appSettingsFragment_to_locationRuleFragment"
             app:destination="@id/locationRuleFragment" />
@@ -34,6 +33,6 @@
     <fragment
         android:id="@+id/locationRuleFragment"
         android:name="com.ntensing.launcher.LocationRuleFragment"
-        android:label="fragment_location_rule"
+        android:label="Edit Locations"
         tools:layout="@layout/fragment_location_rule" />
 </navigation>
