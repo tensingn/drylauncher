@@ -64,7 +64,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         activity.addMenuProvider(new MenuProvider() {
             @Override
             public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
-                //menuInflater.inflate(R.menu.menu_main, menu);
                 menu.clear();
             }
 

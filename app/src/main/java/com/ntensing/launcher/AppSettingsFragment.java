@@ -9,15 +9,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.view.MenuProvider;
 import androidx.navigation.Navigation;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
 import androidx.preference.SwitchPreference;
-
-import com.ntensing.launcher.databinding.FragmentAppsBinding;
 
 public class AppSettingsFragment extends PreferenceFragmentCompat {
 
@@ -101,7 +98,6 @@ public class AppSettingsFragment extends PreferenceFragmentCompat {
         activity.addMenuProvider(new MenuProvider() {
             @Override
             public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
-                //menuInflater.inflate(R.menu.menu_main, menu);
                 menu.clear();
             }
 
