@@ -4,6 +4,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -16,6 +17,9 @@ import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -56,16 +60,6 @@ public class LocationRuleFragment
     private LauncherViewModel model;
 
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
-
-        /**
-         * Manipulates the map once available.
-         * This callback is triggered when the map is ready to be used.
-         * This is where we can add markers or lines, add listeners or move the camera.
-         * In this case, we just add a marker near Sydney, Australia.
-         * If Google Play services is not installed on the device, the user will be prompted to
-         * install it inside the SupportMapFragment. This method will only be triggered once the
-         * user has installed Google Play services and returned to the app.
-         */
         @Override
         public void onMapReady(GoogleMap googleMap) {
             map = googleMap;
@@ -95,6 +89,8 @@ public class LocationRuleFragment
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+        createMenu();
+
         return inflater.inflate(R.layout.fragment_location_rule, container, false);
     }
 
@@ -231,5 +227,28 @@ public class LocationRuleFragment
     @Override
     public void onAddGeofenceDialogNoClick() {
         Log.d(TAG, "On AddGeofenceDialogFragment NO click: Not adding geofence...");
+    }
+
+    private void createMenu() {
+        MainActivity activity = (MainActivity)getActivity();
+        activity.addMenuProvider(new MenuProvider() {
+            @Override
+            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+                menu.clear();
+            }
+
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuItem item) {
+                int id = item.getItemId();
+
+                if (id == R.id.action_settings) {
+                    Navigation.findNavController(activity, R.id.nav_host_fragment_content_main)
+                            .navigate(R.id.action_AppsFragment_to_settingsFragment);
+                    return true;
+                }
+
+                return false;
+            }
+        });
     }
 }
