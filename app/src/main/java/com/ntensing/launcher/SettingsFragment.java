@@ -1,5 +1,6 @@
 package com.ntensing.launcher;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -9,19 +10,25 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.view.MenuProvider;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceScreen;
 
 import com.ntensing.launcher.database.app.AppEntity;
+import com.ntensing.launcher.rules.RulesService;
 
+import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
-    List<AppEntity> apps;
+    HashMap<String, Preference> preferences;
 
     @Override
     public View onCreateView(
@@ -29,6 +36,12 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             Bundle savedInstanceState
     ) {
         createMenu();
+
+        if (preferences != null) {
+            for (Map.Entry<String, Preference> entry : preferences.entrySet()) {
+                entry.getValue().setEnabled(RulesService.getInstance(getContext()).shouldEnableAppPref(entry.getKey()));
+            }
+        }
 
         return super.onCreateView(inflater, container, savedInstanceState);
     }
@@ -41,8 +54,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
         LauncherViewModel model = new ViewModelProvider(requireActivity()).get(LauncherViewModel.class);
         model.getLauncherApps().observe(getActivity(), savedApps -> {
-            apps = savedApps;
-            for (AppEntity app : apps) {
+            preferences = new HashMap<>();
+            for (AppEntity app : savedApps) {
                 Preference pref = new Preference(screen.getContext());
                 pref.setTitle(app.toString());
                 pref.setKey(app.getAppId());
@@ -54,7 +67,9 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                             .navigate(R.id.action_settingsFragment_to_appSettingsFragment, bundle);
                     return true;
                 });
+                pref.setEnabled(RulesService.getInstance(getContext()).shouldEnableAppPref(app.getAppId()));
                 screen.addPreference(pref);
+                preferences.put(app.getAppId(), pref);
             }
         });
     }
@@ -65,15 +80,16 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             @Override
             public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
                 menu.clear();
+                menuInflater.inflate(R.menu.menu_advanced_settings, menu);
             }
 
             @Override
             public boolean onMenuItemSelected(@NonNull MenuItem item) {
                 int id = item.getItemId();
 
-                if (id == R.id.action_settings) {
+                if (id == R.id.action_advanced_settings) {
                     Navigation.findNavController(activity, R.id.nav_host_fragment_content_main)
-                            .navigate(R.id.action_AppsFragment_to_settingsFragment);
+                            .navigate(R.id.action_settingsFragment_to_advancedSettingsFragment);
                     return true;
                 }
 

@@ -22,6 +22,9 @@
         <action
             android:id="@+id/action_settingsFragment_to_appSettingsFragment"
             app:destination="@id/appSettingsFragment" />
+        <action
+            android:id="@+id/action_settingsFragment_to_advancedSettingsFragment"
+            app:destination="@id/advancedSettingsFragment" />
     </fragment>
     <fragment
         android:id="@+id/appSettingsFragment"
@@ -35,4 +38,16 @@
         android:name="com.ntensing.launcher.LocationRuleFragment"
         android:label="Edit Locations"
         tools:layout="@layout/fragment_location_rule" />
+    <fragment
+        android:id="@+id/advancedSettingsFragment"
+        android:name="com.ntensing.launcher.AdvancedSettingsFragment"
+        android:label="Advanced Settings" >
+        <action
+            android:id="@+id/action_advancedSettingsFragment_to_appSettingsEditTimesFragment"
+            app:destination="@id/appSettingsEditTimesFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/appSettingsEditTimesFragment"
+        android:name="com.ntensing.launcher.AppSettingsEditTimesFragment"
+        android:label="App Settings Edit Times" />
 </navigation>
