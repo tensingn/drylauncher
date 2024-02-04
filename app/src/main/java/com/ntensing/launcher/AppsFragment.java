@@ -101,6 +101,7 @@ public class AppsFragment extends Fragment {
         activity.addMenuProvider(new MenuProvider() {
             @Override
             public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+                menu.clear();
                 menuInflater.inflate(R.menu.menu_main, menu);
             }
 

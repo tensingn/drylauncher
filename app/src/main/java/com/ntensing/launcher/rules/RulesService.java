@@ -2,6 +2,7 @@ package com.ntensing.launcher.rules;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
@@ -11,9 +12,11 @@ import com.ntensing.launcher.database.app.AppEntity;
 import com.ntensing.launcher.database.app.AppWithGeofencesEntity;
 import com.ntensing.launcher.database.geofence.GeofenceEntity;
 
+import java.time.LocalTime;
 import java.util.List;
 
 public class RulesService {
+    private static final String TAG = "RulesService";
     private static RulesService instance;
     private SharedPreferences prefs;
     private Context context;
@@ -51,5 +54,26 @@ public class RulesService {
         }
 
         return false;
+    }
+
+    public boolean shouldEnableAppPref(String appId) {
+        prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String startTimeString = prefs.getString(context.getString(R.string.appSettingsEditTimesStartTimePref), null);
+        String endTimeString = prefs.getString(context.getString(R.string.appSettingsEditTimesEndTimePref), null);
+
+        LocalTime startTime;
+        LocalTime endTime;
+        try {
+            startTime = LocalTime.parse(startTimeString);
+            endTime = LocalTime.parse(endTimeString);
+        } catch(Exception e) {
+            return true;
+        }
+
+        boolean appSettingsEditTimesPrefIsOn = prefs.getBoolean(context.getString(R.string.appSettingsEditTimesPref) + context.getString(R.string.enabledPrefSuffix), false);
+        boolean appSettingsEditTimesPrefIsOnForApp = prefs.getBoolean(context.getString(R.string.appSettingsEditTimesPref) + appId + context.getString(R.string.enabledPrefSuffix), false);
+        boolean inTimeSlot = LocalTime.now().isAfter(startTime) && LocalTime.now().isBefore(endTime);
+
+        return !(appSettingsEditTimesPrefIsOn && appSettingsEditTimesPrefIsOnForApp && inTimeSlot);
     }
 }

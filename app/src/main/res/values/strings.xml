@@ -1,11 +1,13 @@
 <resources>
     <string name="app_name">Launcher</string>
     <string name="action_settings">Settings</string>
+
     <!-- Strings used for fragments for navigation -->
     <string name="apps_fragment_label">Apps</string>
     <string name="settings_fragment_label">Settings</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
+
     <!-- Preference Titles -->
     <string name="messages_header">Messages</string>
     <string name="sync_header">Sync</string>
@@ -30,4 +32,8 @@
     <!-- pref strings -->
     <string name="enabledPrefSuffix">_enabled</string>
     <string name="locationRuleEnabledPrefSuffix">_locationRule_enabled</string>
+    <string name="action_advanced_settings">Advanced Settings</string>
+    <string name="appSettingsEditTimesPref">appSettingsEditTimes</string>
+    <string name="appSettingsEditTimesStartTimePref">appSettingsEditTimesStartTimePref</string>
+    <string name="appSettingsEditTimesEndTimePref">appSettingsEditTimesEndTimePref</string>
 </resources>
