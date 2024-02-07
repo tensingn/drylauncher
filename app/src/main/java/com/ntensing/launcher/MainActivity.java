@@ -16,6 +16,7 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.ntensing.launcher.database.app.AppEntity;
 import com.ntensing.launcher.databinding.ActivityMainBinding;
 import com.ntensing.launcher.services.AppMonitoringService;
@@ -89,5 +90,15 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         return NavigationUI.navigateUp(navController, appBarConfiguration)
                 || super.onSupportNavigateUp();
+    }
+
+    public void displayPhoneFab(boolean show) {
+        if (show) {
+            FloatingActionButton fab = findViewById(R.id.fab);
+            fab.show();
+        } else {
+            FloatingActionButton fab = findViewById(R.id.fab);
+            fab.hide();
+        }
     }
 }

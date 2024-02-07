@@ -47,6 +47,16 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     }
 
     @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        MainActivity activity = (MainActivity)getActivity();
+        if (activity.findViewById(R.id.fab) != null) {
+            ((MainActivity)getActivity()).displayPhoneFab(false);
+        }
+    }
+
+    @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         addPreferencesFromResource(R.xml.root_preferences);
 
