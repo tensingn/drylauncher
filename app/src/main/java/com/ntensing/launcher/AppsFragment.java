@@ -55,10 +55,15 @@ public class AppsFragment extends Fragment {
         return binding.getRoot();
     }
 
+    @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         initializeDisplayContent();
+
+        MainActivity activity = (MainActivity)getActivity();
+        if (activity.findViewById(R.id.fab) != null) {
+            ((MainActivity)getActivity()).displayPhoneFab(true);
+        }
     }
 
     @Override
