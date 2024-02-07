@@ -22,7 +22,7 @@ public class LauncherViewModel extends AndroidViewModel {
 
     public LauncherViewModel(@NonNull Application application) {
         super(application);
-        appRepository = new AppRepository(application);
+        appRepository = AppRepository.getInstance(application);
         geofenceRepository = GeofenceRepository.getInstance(application);
     }
 

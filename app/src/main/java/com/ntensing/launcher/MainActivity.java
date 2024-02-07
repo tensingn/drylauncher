@@ -1,18 +1,15 @@
 package com.ntensing.launcher;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.view.MenuInflater;
-import android.view.View;
-
-import androidx.core.view.MenuProvider;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -21,9 +18,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.ntensing.launcher.database.app.AppEntity;
 import com.ntensing.launcher.databinding.ActivityMainBinding;
-
-import android.view.Menu;
-import android.view.MenuItem;
+import com.ntensing.launcher.services.AppMonitoringService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,11 +28,14 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
     private AppEntity phoneApp;
-    private Menu menu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        NotificationChannel channel = new NotificationChannel("Launcher_Channel", "Launcher Notifications", NotificationManager.IMPORTANCE_HIGH);
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.createNotificationChannel(channel);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -67,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
 
-                for (AppEntity app : appsToSave) {
+                for (AppEntity app : savedApps) {
                     if (app.toString().equalsIgnoreCase(PHONE)) {
                         phoneApp = app;
                     }
@@ -77,9 +75,13 @@ public class MainActivity extends AppCompatActivity {
             });
 
         binding.fab.setOnClickListener(view -> {
-            Intent intent1 = getPackageManager().getLaunchIntentForPackage(phoneApp.getActivityName());
-            startActivity(intent1);
+            Intent phoneIntent = getPackageManager().getLaunchIntentForPackage(phoneApp.getActivityName());
+            startActivity(phoneIntent);
         });
+
+        if (!AppMonitoringService.running) {
+            startService(new Intent(this, AppMonitoringService.class));
+        }
     }
 
     @Override

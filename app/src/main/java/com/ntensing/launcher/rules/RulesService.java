@@ -2,9 +2,7 @@ package com.ntensing.launcher.rules;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
-import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
 
 import com.ntensing.launcher.R;
@@ -13,6 +11,7 @@ import com.ntensing.launcher.database.app.AppWithGeofencesEntity;
 import com.ntensing.launcher.database.geofence.GeofenceEntity;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class RulesService {
@@ -20,6 +19,7 @@ public class RulesService {
     private static RulesService instance;
     private SharedPreferences prefs;
     private Context context;
+    public static List<String> alwaysAllow = SetupAlwaysAllow();
 
     private RulesService(Context context) {
         this.context = context;
@@ -75,5 +75,11 @@ public class RulesService {
         boolean inTimeSlot = LocalTime.now().isAfter(startTime) && LocalTime.now().isBefore(endTime);
 
         return !(appSettingsEditTimesPrefIsOn && appSettingsEditTimesPrefIsOnForApp && inTimeSlot);
+    }
+
+    private static List<String> SetupAlwaysAllow() {
+        List<String> allowed = new ArrayList<>();
+        allowed.add("com.ntensing.launcher");
+        return allowed;
     }
 }
