@@ -6,20 +6,25 @@ import androidx.lifecycle.LiveData;
 
 import com.ntensing.launcher.database.DatabaseConnection;
 import com.ntensing.launcher.database.DatabaseConnectionSingleton;
-import com.ntensing.launcher.database.app.AppDao;
-import com.ntensing.launcher.database.app.AppEntity;
-import com.ntensing.launcher.database.geofence.GeofenceEntity;
 
 import java.util.List;
-import java.util.Map;
 
 public class AppRepository {
+    private static AppRepository instance;
     private AppDao appDao;
     private DatabaseConnection db;
 
-    public AppRepository(Context context) {
+    private AppRepository(Context context) {
         db = DatabaseConnectionSingleton.getInstance(context);
         appDao = db.appDao();
+    }
+
+    public static synchronized AppRepository getInstance(Context context) {
+        if (instance == null) {
+            instance = new AppRepository(context);
+        }
+
+        return instance;
     }
 
     public LiveData<List<AppEntity>> getAllApps() {

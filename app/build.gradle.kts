@@ -36,6 +36,7 @@ dependencies {
     implementation("androidx.room:room-common:2.6.1")
     implementation("com.google.android.gms:play-services-maps:18.1.0")
     implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation("androidx.lifecycle:lifecycle-service:2.7.0")
     val roomVersion = "2.6.1"
 
     implementation("androidx.room:room-runtime:$roomVersion")
