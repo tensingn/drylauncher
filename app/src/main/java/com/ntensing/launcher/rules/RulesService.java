@@ -74,7 +74,7 @@ public class RulesService {
         boolean appSettingsEditTimesPrefIsOnForApp = prefs.getBoolean(context.getString(R.string.appSettingsEditTimesPref) + appId + context.getString(R.string.enabledPrefSuffix), false);
         boolean inTimeSlot = LocalTime.now().isAfter(startTime) && LocalTime.now().isBefore(endTime);
 
-        return !(appSettingsEditTimesPrefIsOn && appSettingsEditTimesPrefIsOnForApp && inTimeSlot);
+        return !(appSettingsEditTimesPrefIsOn && appSettingsEditTimesPrefIsOnForApp && !inTimeSlot);
     }
 
     private static List<String> SetupAlwaysAllow() {
