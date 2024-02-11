@@ -263,8 +263,6 @@ public class LocationRuleFragment
         AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
                 getChildFragmentManager().findFragmentById(R.id.autocomplete_fragment);
 
-        Fragment f = getChildFragmentManager().findFragmentById(R.id.autocomplete_fragment);
-
         if (!Places.isInitialized()) {
             Places.initialize(getActivity().getApplicationContext(), BuildConfig.MAPS_API_KEY);
         }
