@@ -1,7 +1,22 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
+
+fun getLocalPropertiesValue(prop: String): String {
+    val p = Properties()
+    val f = File("local.properties")
+
+    if (f.exists()) {
+        p.load(f.inputStream())
+        return p.getProperty(prop)
+    }
+
+    return ""
+}
+
 
 android {
     namespace = "com.ntensing.launcher"
@@ -15,6 +30,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "MAPS_API_KEY", getLocalPropertiesValue("MAPS_API_KEY"))
     }
 
     buildTypes {
@@ -29,6 +46,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
@@ -37,6 +55,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-maps:18.1.0")
     implementation("com.google.android.gms:play-services-location:21.0.1")
     implementation("androidx.lifecycle:lifecycle-service:2.7.0")
+    implementation("com.google.android.libraries.places:places:3.3.0")
     val roomVersion = "2.6.1"
 
     implementation("androidx.room:room-runtime:$roomVersion")
