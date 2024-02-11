@@ -1,15 +1,5 @@
 package com.ntensing.launcher;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.view.MenuProvider;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.Navigation;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.graphics.Color;
@@ -24,6 +14,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.view.MenuProvider;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.Navigation;
+
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
@@ -34,16 +34,22 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.CancellationTokenSource;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.RectangularBounds;
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.ntensing.launcher.database.geofence.GeofenceEntity;
-import com.ntensing.launcher.database.geofence.GeofenceRepository;
 import com.ntensing.launcher.geofence.GeofenceService;
 
-import java.util.List;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.UUID;
 
 public class LocationRuleFragment
@@ -58,6 +64,8 @@ public class LocationRuleFragment
     private GoogleMap map;
     private GeofenceService geofenceService;
     private LauncherViewModel model;
+    private Marker lastMarker;
+    private HashMap<String, MarkerCircle> geofenceMarkerCircles = new HashMap<>();
 
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
         @Override
@@ -66,21 +74,23 @@ public class LocationRuleFragment
 
             if (lastLocation != null) {
                 LatLng lastLatLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
-                googleMap.addMarker(new MarkerOptions().position(lastLatLng).title("Current Location"));
-                googleMap.moveCamera(CameraUpdateFactory.newLatLng(lastLatLng));
-                googleMap.setMaxZoomPreference(20.0f);
-                googleMap.setMinZoomPreference(10.0f);
+                moveMap(lastLatLng);
             }
 
             displaySavedGeofences();
 
             googleMap.setOnMapLongClickListener(LocationRuleFragment.this);
             googleMap.setOnMarkerClickListener(marker -> {
-                GeofenceEntity geofenceEntity = (GeofenceEntity) marker.getTag();
-                new RemoveGeofenceDialogFragment(geofenceEntity.getGeofenceId())
-                        .show(getChildFragmentManager(), "REMOVE_GEOFENCE");
+                String geofenceId = (String) marker.getTag();
+                if (geofenceId != null) {
+                    new RemoveGeofenceDialogFragment(geofenceId)
+                            .show(getChildFragmentManager(), "REMOVE_GEOFENCE");
+                }
+
                 return false;
             });
+
+            createAutocomplete();
         }
     };
 
@@ -98,6 +108,7 @@ public class LocationRuleFragment
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         model = new ViewModelProvider(requireActivity()).get(LauncherViewModel.class);
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
 
@@ -171,6 +182,15 @@ public class LocationRuleFragment
                 });
     }
 
+    private void removeGeofence(String geofenceId) {
+        model.deleteGeofenceById(geofenceId);
+        if (geofenceMarkerCircles.containsKey(geofenceId)) {
+            MarkerCircle mc = geofenceMarkerCircles.get(geofenceId);
+            mc.marker.remove();
+            mc.circle.remove();
+        }
+    }
+
     private String getAppId() {
         String appId = "";
 
@@ -184,24 +204,11 @@ public class LocationRuleFragment
 
     private void displaySavedGeofences() {
         model.getGeofencesByAppId(getAppId()).observe(getActivity(), savedGeofences -> {
-            // need to clear map so we can get rid of deleted geofences
-            map.clear();
-            LatLng lastLatLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
-            map.addMarker(new MarkerOptions().position(lastLatLng).title("Current Location"));
-
             for (GeofenceEntity geofenceEntity : savedGeofences) {
-                MarkerOptions markerOptions = new MarkerOptions()
-                        .position(geofenceEntity.getLatLng());
-                Marker marker = map.addMarker(markerOptions);
-                marker.setTag(geofenceEntity);
-
-                CircleOptions circleOptions = new CircleOptions()
-                        .center(geofenceEntity.getLatLng())
-                        .radius(geofenceEntity.getRadius())
-                        .strokeColor(Color.argb(255, 0, 0, 255))
-                        .strokeWidth(4)
-                        .fillColor(Color.argb(50, 0, 0, 255));
-                map.addCircle(circleOptions);
+                if (!geofenceMarkerCircles.containsKey(geofenceEntity.getGeofenceId())) {
+                    MarkerCircle mc = createMarkerCircle(geofenceEntity.getLatLng(), geofenceEntity.getRadius(), geofenceEntity.getGeofenceId());
+                    geofenceMarkerCircles.put(geofenceEntity.getGeofenceId(), mc);
+                }
             }
         });
     }
@@ -209,7 +216,7 @@ public class LocationRuleFragment
     @Override
     public void onRemoveGeofenceDialogYesClick(String geofenceId) {
         Log.d(TAG, "On RemoveGeofenceDialogFragment YES click: Deleting geofence " + geofenceId + "...");
-        model.deleteGeofenceById(geofenceId);
+        removeGeofence(geofenceId);
     }
 
     @Override
@@ -250,5 +257,77 @@ public class LocationRuleFragment
                 return false;
             }
         });
+    }
+
+    private void createAutocomplete() {
+        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
+                getChildFragmentManager().findFragmentById(R.id.autocomplete_fragment);
+
+        Fragment f = getChildFragmentManager().findFragmentById(R.id.autocomplete_fragment);
+
+        if (!Places.isInitialized()) {
+            Places.initialize(getActivity().getApplicationContext(), BuildConfig.MAPS_API_KEY);
+        }
+
+        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG));
+
+        if (lastLocation != null) {
+            autocompleteFragment.setLocationBias(RectangularBounds.newInstance(
+                    new LatLng(lastLocation.getLatitude() - 1, lastLocation.getLongitude() - 1),
+                    new LatLng(lastLocation.getLatitude() + 1, lastLocation.getLongitude() + 1)
+            ));
+        }
+
+        autocompleteFragment.setCountries("US");
+
+        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(@NonNull Place place) {
+                Log.i(TAG, "Place: " + place.getName() + ", " + place.getId() + "selected...");
+                moveMap(place.getLatLng());
+            }
+
+            @Override
+            public void onError(@NonNull Status status) {
+                // TODO: show toast or popup that error occurred
+                Log.i(TAG, "An error occurred: " + status);
+            }
+        });
+    }
+
+    private void moveMap(LatLng latLng) {
+        if (map != null && latLng != null) {
+            if (lastMarker != null) {
+                lastMarker.remove();
+            }
+            lastMarker = map.addMarker(new MarkerOptions().position(latLng).title("Current Location"));
+            map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+            map.setMaxZoomPreference(20.0f);
+            map.setMinZoomPreference(10.0f);
+        }
+    }
+
+    private class MarkerCircle {
+        Marker marker;
+        Circle circle;
+    }
+
+    private MarkerCircle createMarkerCircle(LatLng latLng, double radius, Object markerTag) {
+        MarkerCircle mc = new MarkerCircle();
+
+        MarkerOptions markerOptions = new MarkerOptions()
+                .position(latLng);
+        mc.marker = map.addMarker(markerOptions);
+        mc.marker.setTag(markerTag);
+
+        CircleOptions circleOptions = new CircleOptions()
+                .center(latLng)
+                .radius(radius)
+                .strokeColor(Color.argb(255, 0, 0, 255))
+                .strokeWidth(4)
+                .fillColor(Color.argb(50, 0, 0, 255));
+        mc.circle = map.addCircle(circleOptions);
+
+        return mc;
     }
 }
